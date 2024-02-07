@@ -8,17 +8,18 @@ class SBM():
 			partition (list[list[int]])
 			probabilities (list[list[int]])
 			'''
-
 			def __init__(self, size, partition, probabilities) -> None:
 					assert isDisjoint(partition)
-					adjList = [[] for _ in range(size)]
+					self.adjList = [[] for _ in range(size)]
 					for i in range(size):
-							adjList[i].append(i)
+							self.adjList[i].append(i)
 							for j in range(size):
 									if(i !=j):
 											if(random.random() < probabilities[find_partition(partition, i)][find_partition(partition, j)]):
-													adjList[i].append(j)
-					print(adjList)
+													self.adjList[i].append(j)
+			
+			def __str__(self) -> str:
+    				return str(self.adjList)
 			
 
 def isDisjoint(partition) -> bool:
@@ -49,3 +50,4 @@ class ER(SBM):
 						r = len(partition)
 						probabilities = [[p for _ in range(r)] for _ in range(r)]
 						super().__init__(size, partition, probabilities)
+						
