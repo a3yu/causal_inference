@@ -6,9 +6,10 @@ class Experiment:
         self.model = model
         self.rct = rct
 
-    def run(self):
-        tte = self.computeTTE()
-        estimate = self.computeEstimate()
+    def run(self, numIterations):
+        for _ in range(numIterations):
+            tte = self.computeTTE()
+            estimate = self.computeEstimate()
         # TODO
 
     def computeTTE(self):
