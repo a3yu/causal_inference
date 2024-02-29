@@ -1,53 +1,18 @@
 import random
-example = [[(1,2),(3,4)],[(5,6),(7,8)],[(1,2),(3,4)],[],[]]
+import numpy as np
+from model.model import Model
+from model.graphs.sbm import SBM
+from experiment.rcts import rct
+def main():
+    # G = sbm(...)
+    # Y = pom(G, coeffs, beta)
+    # TTE_gt = np.sum(Y(np.ones(n)) - Y(np.zeros(n))) / n
+    # Z = staggered_bern(n, P, r)
+    # TTE_est = poly_interp(Z, Y, P)
+    P = np.array([0.5, 0.7])
+    Z = rct.staggered_Bernoulli(5, P, 3)
+    print(Z)
+    
 
-class SBM():
-			'''
-			Stochastic Block Model
-			size (int)
-			partition (list[list[int]])
-			probabilities (list[list[int]])
-			'''
-			def __init__(self, size, partition, probabilities) -> None:
-					assert isDisjoint(partition)
-					self.adjList = [[] for _ in range(size)]
-					for i in range(size):
-							self.adjList[i].append(i)
-							for j in range(size):
-									if(i !=j):
-											if(random.random() < probabilities[find_partition(partition, i)][find_partition(partition, j)]):
-													self.adjList[i].append(j)
-			
-			def __str__(self) -> str:
-    				return str(self.adjList)
-			
-
-def isDisjoint(partition) -> bool:
-		distinct = set()
-		counter = 0
-		for part in partition:
-				for v in part:
-					distinct.add(v)
-					counter += 1
-		return len(distinct) == counter
-
-def find_partition(partition, node):
-			for i in range(len(partition)):
-					for j in range(len(partition[i])):
-							if partition[i][j] == node:
-									return i
-			return -1
-			
-			
-class ER(SBM):
-			'''
-			Erdős–Rényi model
-			size (int)
-			partition (list[list[int]])
-			p (int)
-			'''
-			def __init__(self, size, partition, p) -> None:
-						r = len(partition)
-						probabilities = [[p for _ in range(r)] for _ in range(r)]
-						super().__init__(size, partition, probabilities)
-						
+if __name__ == '__main__':
+    main()

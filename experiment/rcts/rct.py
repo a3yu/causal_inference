@@ -1,46 +1,37 @@
 import numpy as np
 
-class RCT:
-    def __init__(self) -> None:
-        '''
-        Instantiate an instance of a RCT factory.
-        '''
-
-    def bernoulliRD(self, n, p):
-        '''
-        n: size of graph
-        p: probability of receiving treatment (E[# of clusters])
-        '''
-        design = (np.random.rand(n) < p) + 0
-        return np.where(design == 1)[0]
+def bernoulliRD(n, p):
+    '''
+    n: size of graph
+    p: probability of receiving treatment (E[# of clusters])
+    '''
+    design = (np.random.rand(n) < p) + 0
+    return np.where(design == 1)[0]
 
 
-    def CRD(self, n, k):
-        '''
-        n: size of graph
-        k: number of clusters to select
-        '''
-        design = np.zeros(shape=(n))
-        design[:k] = np.ones(shape=(k))
-        rng = np.random.default_rng()
-        rng.shuffle(design)
-        return np.where(design==1)[0]
+def CRD(clusters, k):
+    '''
+    clusters: number of clusters
+    k: number of clusters to select
+    '''
+    design = np.zeros(shape=(clusters))
+    design[:k] = np.ones(shape=(k))
+    rng = np.random.default_rng()
+    rng.shuffle(design)
+    return np.where(design==1)[0]
 
 
-    def staggered_Bernoulli(self, n, P, K):
-        '''
-        Returns a nxtxk tensor specifying the treatment selections of staggered rollout Bernoulli trials.
-        n: size of population
-        P (1d np array): probabilities for each rollout timestep
-        K: number of trials
-        '''
-        T = P.size
-        design = np.empty((T, n, k))
-        for k in range(K): # repetitions of the staggered rollout trial
-            Z = np.empty((T, n))
-            U = np.random.rand(n)
-            for t in range(T): # doing one rollout trial
-                Z[t,:] = (U < P[t])+0
-            design[k,:,:] = Z
-        
-        return design
+def staggered_Bernoulli(n, P, r):
+    '''
+    Returns a Txnxr tensor specifying the treatment selections of staggered rollout Bernoulli trials.
+    n: size of population
+    P (1d np array): probabilities for each rollout timestep
+    r: number of trials (repetitions)
+    '''
+    T = P.size
+    U = np.random.rand(r, T, n) # initialise random tensor
+    P_broad = P.reshape(1, T, 1) # broadcast P
+    design = (U < P_broad).astype(int) # compare each rxT slice with the p's given in U
+    design = design.transpose(1, 2, 0)
+
+    return design
