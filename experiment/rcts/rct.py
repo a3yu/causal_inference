@@ -29,9 +29,16 @@ def staggered_Bernoulli(n, P, r):
     r: number of trials (repetitions)
     '''
     T = P.size
-    U = np.random.rand(r, T, n) # initialise random tensor
-    P_broad = P.reshape(1, T, 1) # broadcast P
+    U = np.random.rand(T, n, r) # initialise random tensor
+    P_broad = P.reshape(T, 1, 1) # broadcast P
     design = (U < P_broad).astype(int) # compare each rxT slice with the p's given in U
-    design = design.transpose(1, 2, 0)
-
+    
     return design
+
+
+def clustered_staggered_Bernoulli(n, P, r, selected):
+    design = staggered_Bernoulli(n, P, r)
+    # masking
+    mask = np.zeros_like(design, dtype=bool)
+    mask[:, selected, :] = True # for the individuals dim, set each i in selected to 1
+    return np.where(mask, design, 0)
