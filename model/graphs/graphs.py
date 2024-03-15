@@ -16,14 +16,16 @@ def SBM(size, partition, probabilities):
                     return i
         return -1
     
-    adjlist = [[] for _ in range(size)]
+      
+    adjList = [[] for _ in range(size)]
     for i in range(size):
-        adjlist[i].append(i)
+        adjList[i].append(i)
+        
         for j in range(size):
-            if i != j and (random.random() < probabilities[find_partition(partition, i)]
-                            [find_partition(partition, j)]):
-                adjlist[i].append(j)
-        return adjlist
+            if i != j:
+                if (random.random() < probabilities[find_partition(partition, i)][find_partition(partition, j)]):
+                    adjList[i].append(j)
+    return adjList
 
 
 def ER(size, partition, p):
