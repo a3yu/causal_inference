@@ -1,7 +1,7 @@
 import numpy as np
 from itertools import combinations
 
-def inner(z, Z, G, C, beta):
+def inner(Z, G, C, beta):
     '''
     Z: Txnxr RCT design tensor
     G: Graph
@@ -10,12 +10,12 @@ def inner(z, Z, G, C, beta):
 
     # construct A (nxmxTxr) from G:
     T,n,r = Z.shape
-    m = len(C)
-    A = np.empty((n, m))
+    m = len(C[0])
+    A = np.empty((n, m, T, r))
     # A[i][j] = prod_{k in S_j} of z_k
     for i in range(n):
         # S = [0 for _ in range(m)] 
-        S = np.empty(m, T, r) # mxTxr slice
+        S = np.empty((m, T, r)) # mxTxr slice
         neighbours = G[i]
         subset_idx = 0
         for size in range(beta + 1): # generate subsets
@@ -24,13 +24,14 @@ def inner(z, Z, G, C, beta):
                 for t in range(T):
                     for rep in range(r):
                         prod = 0 if any(Z[t][k][rep] for k in subset) else 1
-                        S[t][subset_idx][r] = prod
-                        subset_idx += 1
+                        S[subset_idx][t][rep] = prod
+                subset_idx += 1
+            
         A[i] = S
     
     Y = np.empty((n,T,r))
     for i in range(n):
-        Y[i] = C[i] @ A[i]
+        Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
     return Y
 
 
