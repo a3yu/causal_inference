@@ -40,33 +40,39 @@ def innerIndices(Z, G, C, beta):
     for j in range(len(whole)):
         for i in range(len(subsets)):
             person = []  # Initialize person as a list for each subset
-            for k in range(len(subsets[i])):
-                if len(subsets[i][k]) != 0:
-                    if(np.min(whole[j, subsets[i][k]])== -1):
-                        person.append(np.zeros(time))
+            for k in range(len(C[0])):
+                if len(subsets[i]) > k:
+                    if len(subsets[i][k]) != 0:
+                        if(np.min(whole[j, subsets[i][k]])== -1):
+                            person.append(np.zeros(time))
+                        else:
+                            my_array = np.zeros(time)
+                            my_array[np.max(whole[j, subsets[i][k]]):] = 1
+                            person.append(my_array)  
                     else:
-                        my_array = np.zeros(time)
-                        my_array[np.max(whole[j, subsets[i][k]]):] = 1
-                        person.append(my_array)  
+                        person.append(np.zeros(time)) 
                 else:
-                    person.append(np.zeros(time))  # Append zeros list of length 'time'
+                   person.append(np.zeros(time)) 
             big.append(person)  # Append person list to big
         rep.append(big)
-    
         # construct A (nxmxTxr) from G:
         #  rxnxmxt
-        
-    return whole
+    rep = np.transpose(rep, (1, 2, 3, 0))
+    Y = np.empty((Z.shape[1],Z.shape[0],Z.shape[2]))
+    for i in range(Z.shape[1]):
+        Y[i] = np.einsum('i,ijk->jk', C[i], rep[i])
+    print(Y)
+    return Y
+    
     
     
         
 def main():
     G = SBM(3, [[1,2], [3]], [[0.5, 0.5], [0.5, 0.5]])
     P = np.array([0.5, 0.7])
-    Z = rct.staggered_Bernoulli(3, P, 4)
-    
+    Z = rct.staggered_Bernoulli(3, P, 5)
     A = np.array([[[1, 0, 1, 0],[0, 1, 0, 0],[1, 1, 0, 0]],[[1, 1, 1, 1],[1, 1, 0, 0],[1, 1, 1, 0]]])
-    innerIndices(A, G, None, 2)
+    innerIndices(Z, [[0,1,2],[0,1],[2]],[[0,1,2,3,4,0],[0,1,2,0,0,0],[0,1,0,0,0,0]],1 )
     
     
 if __name__ == '__main__':
