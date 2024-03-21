@@ -4,75 +4,62 @@ import experiment.rcts.rct as rct
 from model.graphs.graphs import SBM
 import numpy as np
 
-def powerset(iterable, beta):
+def _powerset(iterable, beta):
     s = list(iterable)
     return list(chain.from_iterable(combinations(s, r) for r in range(beta+1)))
     
 
-def innerIndices(Z, G, C, beta):
+def inner(Z, G, C, beta):
     '''
     Z: Txnxr RCT design tensor
-    G: Graph
+    G: Graph: adjacency list of incoming edges for each individual
     C (list[np array]): coefficients, n x m
     '''
-    time = Z.shape[0]
-    subsets = []
-    for i in range(len(G)):
-        neighbours = G[i]
-        subsets.append(powerset(neighbours, beta))
+    T, n, r = Z.shape
+    # initialise the subsets for each person
+    subsets = [_powerset(G[i], beta) for i in range(n)]
+    m = max([len(C[i]) for i in range(n)]) #NOTE: len(C[0]) ?
+    # R x N matrix where whole[r][n] = the index that person n gets treated in the rth repetition
     
-    whole = []  # Initialize as list to store 1D arrays
-    for y in range(Z.shape[2]):
-        people = np.array([], dtype=int)
-        for x in range(Z.shape[1]):
+    whole = np.empty((r, n))
+    for y in range(r):
+        people = np.empty(n)
+        for x in range(n):
             slice_z = Z[:, x, y]
             idx = np.where(slice_z == 1)[0]
-            if idx.size == 0:
-                people = np.append(people, -1)
-            else:
-                people = np.append(people, idx[0])
-        whole.append(people)  # Append the 1D array to the list
-    # R x N matrix where [r][n] is the index that person n gets treated in the rth reptition
-    whole = np.array(whole)  # Convert the list of 1D arrays into a 2D array
-    print(whole)
-    rep = []
+            people[x] = idx[0] if idx.size != 0 else -1
+        whole[y] = people
+    A = [] #rxnxmxT
     big = []
-    for j in range(len(whole)):
-        for i in range(len(subsets)):
+    for j in range(r):
+        for i in range(n):
             person = []  # Initialize person as a list for each subset
-            for k in range(len(C[0])):
-                if len(subsets[i]) > k:
-                    if len(subsets[i][k]) != 0:
-                        if(np.min(whole[j, subsets[i][k]])== -1):
-                            person.append(np.zeros(time))
-                        else:
-                            my_array = np.zeros(time)
-                            my_array[np.max(whole[j, subsets[i][k]]):] = 1
-                            person.append(my_array)  
-                    else:
-                        person.append(np.zeros(time)) 
+            for k in range(m):
+                if len(subsets[i]) <= k or len(subsets[i][k]) == 0: #NOTE what to do with emptyset?
+                    person.append(np.zeros(T))
+                elif np.min(whole[j, subsets[i][k]]) == -1:
+                    person.append(np.zeros(T))
                 else:
-                   person.append(np.zeros(time)) 
+                    my_array = np.zeros(T)
+                    my_array[int(np.max(whole[j, subsets[i][k]])):] = 1
+                    person.append(my_array)
             big.append(person)  # Append person list to big
-        rep.append(big)
-        # construct A (nxmxTxr) from G:
-        #  rxnxmxt
-    rep = np.transpose(rep, (1, 2, 3, 0))
-    Y = np.empty((Z.shape[1],Z.shape[0],Z.shape[2]))
-    for i in range(Z.shape[1]):
-        Y[i] = np.einsum('i,ijk->jk', C[i], rep[i])
-    print(Y)
+        A.append(big)
+    # transpose to nxmxTxr
+    A = np.transpose(A, (1, 2, 3, 0))
+    print(A.shape)
+    Y = np.empty((n, T, r))
+    for i in range(n):
+        Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
     return Y
     
     
-    
-        
 def main():
     G = SBM(3, [[1,2], [3]], [[0.5, 0.5], [0.5, 0.5]])
     P = np.array([0.5, 0.7])
     Z = rct.staggered_Bernoulli(3, P, 5)
     A = np.array([[[1, 0, 1, 0],[0, 1, 0, 0],[1, 1, 0, 0]],[[1, 1, 1, 1],[1, 1, 0, 0],[1, 1, 1, 0]]])
-    innerIndices(Z, [[0,1,2],[0,1],[2]],[[0,1,2,3,4,0],[0,1,2,0,0,0],[0,1,0,0,0,0]],1 )
+    inner(Z, [[0,1,2],[0,1],[2]],[[0,1,2,3,4,0],[0,1,2,0,0,0],[0,1,0,0,0,0]],1 )
     
     
 if __name__ == '__main__':
