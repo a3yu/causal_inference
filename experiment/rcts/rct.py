@@ -32,7 +32,7 @@ def staggered_Bernoulli(n, P, r):
     U = np.random.rand(T, n, r) # initialise random tensor
     P_broad = P.reshape(T, 1, 1) # broadcast P
     design = (U < P_broad).astype(int) # compare each rxT slice with the p's given in U
-    
+    design = np.maximum.accumulate(design, axis=0) # ensures individuals stay treated along T axis
     return design
 
 
