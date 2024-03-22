@@ -1,7 +1,7 @@
 import numpy as np
-from itertools import combinations
+from itertools import chain,combinations
 
-def inner(Z, G, C, beta):
+def inner_benson(Z, G, C, beta):
     '''
     Z: Txnxr RCT design tensor
     G: Graph
@@ -30,6 +30,77 @@ def inner(Z, G, C, beta):
         A[i] = S
     
     Y = np.empty((n,T,r))
+    for i in range(n):
+        Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
+    return Y
+
+def _subsets(S, beta):
+    return list(chain.from_iterable(combinations(S, k) for k in range(beta+1)))
+
+def inner_matt(Z, G, C, beta):
+    '''
+    Matt's implementation of the function that maps treatment assignments to potential outcomes
+        Z: Tensor of treatment assignments: T x n x r 
+        G: Adjacency list representation of graph (length = n)
+        C: List of lists of model coefficients (length = n, length of C[i] = mi)
+    Returns Y: T x n x r
+    '''
+    
+    T,n,r = Z.shape
+
+    # Note: This function will work best if the shapes of Z and Y are T x r x n, I'll transpose for now
+    Z = np.transpose(Z,(0,2,1))
+
+    Y = np.empty((T,n,r))
+    for i in range(n):
+        Sis = _subsets(G[i],beta)                    # vector of lists of elements in each subset 
+        A = np.empty((T,r,len(Sis)))                 # indicates full treatment of each subset at each time/replication 
+        for j,Si in enumerate(Sis):
+            A[:,:,j] = np.prod(Z[:,:,Si], axis=2)   
+        Y[:,i,:] = A @ C[i] 
+
+    return Y
+
+def inner_aedin(Z, G, C, beta):
+    '''
+    Z: Txnxr RCT design tensor
+    G: Graph: adjacency list of incoming edges for each individual
+    C (list[np array]): coefficients, n x m
+    '''
+    T, n, r = Z.shape
+    # initialise the subsets for each person
+    subsets = [_subsets(G[i], beta) for i in range(n)]
+    m = max([len(C[i]) for i in range(n)]) #NOTE: len(C[0]) ?
+    # R x N matrix where whole[r][n] = the index that person n gets treated in the rth repetition
+    
+    whole = np.empty((r, n))
+    for y in range(r):
+        people = np.empty(n)
+        for x in range(n):
+            slice_z = Z[:, x, y]
+            idx = np.where(slice_z == 1)[0]
+            people[x] = idx[0] if idx.size != 0 else -1
+        whole[y] = people
+    A = [] #rxnxmxT
+    big = []
+    for j in range(r):
+        for i in range(n):
+            person = []  # Initialize person as a list for each subset
+            for k in range(m):
+                if len(subsets[i]) <= k or len(subsets[i][k]) == 0: #NOTE what to do with emptyset?
+                    person.append(np.zeros(T))
+                elif np.min(whole[j, subsets[i][k]]) == -1:
+                    person.append(np.zeros(T))
+                else:
+                    my_array = np.zeros(T)
+                    my_array[int(np.max(whole[j, subsets[i][k]])):] = 1
+                    person.append(my_array)
+            big.append(person)  # Append person list to big
+        A.append(big)
+    # transpose to nxmxTxr
+    A = np.transpose(A, (1, 2, 3, 0))
+    print(A.shape)
+    Y = np.empty((n, T, r))
     for i in range(n):
         Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
     return Y
