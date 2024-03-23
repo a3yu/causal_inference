@@ -10,6 +10,13 @@ def inner_benson(Z, G, C, beta):
 
     # construct A (nxmxTxr) from G:
     T,n,r = Z.shape
+
+    # Matt's edit to make inputs consistent
+    m = max([len(Ci) for Ci in C])
+    for Ci in C:
+        Ci += [0]*(m-len(Ci))
+
+
     m = len(C[0])
     A = np.empty((n, m, T, r))
     # A[i][j] = prod_{k in S_j} of z_k
@@ -68,6 +75,12 @@ def inner_aedin(Z, G, C, beta):
     C (list[np array]): coefficients, n x m
     '''
     T, n, r = Z.shape
+
+    # Matt's edit to make inputs consistent
+    m = max([len(Ci) for Ci in C])
+    for Ci in C:
+        Ci += [0]*(m-len(Ci))
+
     # initialise the subsets for each person
     subsets = [_subsets(G[i], beta) for i in range(n)]
     m = max([len(C[i]) for i in range(n)]) #NOTE: len(C[0]) ?
