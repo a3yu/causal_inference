@@ -58,7 +58,7 @@ def sequential_treatment_probs(beta, p):
     p : treatment budget / marginal treatment probability
     '''
     P = [(i)*p/(beta) for i in range(beta)]
-    return P
+    return np.array(P)
 
 
 def staggered_Bernoulli(n, P, r):
