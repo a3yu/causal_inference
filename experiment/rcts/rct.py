@@ -2,23 +2,63 @@ import numpy as np
 
 def bernoulliRD(n, p):
     '''
-    n: size of graph
-    p: probability of receiving treatment (E[# of clusters])
+    Bernoulli(p) randomized control trial on n units
+
+    n: number of units
+    p: probability of selection
+
+    returns binary treatment assignment vector (numpy array with n elements)
     '''
     design = (np.random.rand(n) < p) + 0
-    return np.where(design == 1)[0]
+    return design
 
 
-def CRD(clusters, k):
+def completeRD(n, k):
     '''
-    clusters: number of clusters
-    k: number of clusters to select
+    Complete(n,k) randomized control trial
+
+    n: number of units
+    k: number of units to select
+
+    returns binary treatment assignment vector (numpy array with n elements)
     '''
-    design = np.zeros(shape=(clusters))
+    design = np.zeros(shape=(n))
     design[:k] = np.ones(shape=(k))
     rng = np.random.default_rng()
     rng.shuffle(design)
-    return np.where(design==1)[0]
+    return design
+
+def select_clusters_bernoulli(n, p):
+    '''
+    Bernoulli(p) randomized control trial on n units
+
+    n: number of units
+    p: probability of selection
+
+    returns the labels/indices of units selected according to the Bernoulli(p) RCT
+    '''
+    design = bernoulliRD(n,p)
+    return np.where(design == 1)[0]
+
+def select_clusters_complete(n, k):
+    '''
+    Complete(n,k) randomized control trial
+
+    n: number of units
+    k: number of units to select
+
+    returns the labels/indices of units selected according to the Bernoulli(p) RCT
+    '''
+    design = completeRD(n, k)
+    return np.where(design == 1)[0]
+
+def sequential_treatment_probs(beta, p):
+    '''
+    beta : degree of the potential outcomes model
+    p : treatment budget / marginal treatment probability
+    '''
+    P = [(i)*p/(beta) for i in range(beta)]
+    return P
 
 
 def staggered_Bernoulli(n, P, r):
