@@ -26,6 +26,16 @@ def coeffs(G, cf):
             C[i].append(coeff)
     return C
 
+def uniform_coeffs(i, S, G):
+    '''
+    i : unit/node
+    S : subset of i's neighborhood
+    G : graph/network 
+    '''
+    a = 2
+    b = 3
+    ciS = np.random.uniform(0,a) / (b**len(S))
+    return ciS
 
 def inner_benson(Z, G, C, beta):
     '''
