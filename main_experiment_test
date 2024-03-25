@@ -1,0 +1,33 @@
+import numpy as np
+from model.graphs.graphs import SBM, balanced_partition_pin_pout
+from experiment.rcts import rct
+from model.poms import pom
+from experiment.estimators import estimator
+
+def main():
+    n = 1000    # population size
+    nc = 50     # number of clusters
+    avg_degree = 10 # average graph degree
+    p_in = 0.5  # probability of edge between units within same cluster; largest this can be is (nc/n)*avg_degree
+    p_out = (avg_degree - p_in*(n/nc))/(n - (n/nc)) # probability of edge between units of different clusters
+    beta = 1    # potential outcomes model degree
+    p = 0.06    # treatment budget (marginal treatment probability)
+    q = 1       # cluster treatment budget (conditional treatment probability)
+    r = 30      # number of RCT repetitions
+    cf = lambda i, S, G: pom.uniform_coeffs(i, S, G)    # function to generate coefficients
+
+    partitions, probs = balanced_partition_pin_pout(n, nc, p_in, p_out)
+    G = SBM(n, partitions, probs)
+    TTE_true, fy = pom.ppom(beta, G, cf)
+    selected = rct.select_clusters_bernoulli(nc, p/q)
+
+    P = rct.sequential_treatment_probs(beta, q)
+    Z = rct.clustered_staggered_Bernoulli(n, P, r, selected)
+    Y = fy(Z)
+
+    TTE_est = estimator.polynomial_estimate(Z, Y, P)  
+    avg_rel_bias = np.sum((TTE_est - TTE_true)/TTE_true)/r
+    print("The average relative bias of the estimator is {}".format(avg_rel_bias))
+
+if __name__ == '__main__':
+    main()
