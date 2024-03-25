@@ -7,11 +7,11 @@ def ppom(beta, G, cf):
     Returns TTE and the POM function: lambda Z: Y
     '''
     n = len(G)
-    C = coeffs(G, cf)
+    C = coeffs(beta, G, cf)
     TTE = sum([sum(C[i]) - C[i][0] for i in range(n)])
     return TTE, lambda Z: inner_matt(beta, G, C, Z)
 
-def coeffs(G, cf):
+def coeffs(beta, G, cf):
     '''
     Creates the coefficients on a graph with a user-defined function
     cf: lambda i, S, G: coeff
@@ -21,8 +21,8 @@ def coeffs(G, cf):
     C = [[] for _ in range(n)]
     for i in range(n):
         neighbours = G[i]
-        for subset in _subsets(neighbours):
-            coeff = cf(i, neighbours, G)
+        for subset in _subsets(neighbours, beta):
+            coeff = cf(i, subset, G)
             C[i].append(coeff)
     return C
 
