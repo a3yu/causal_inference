@@ -1,47 +1,54 @@
 import numpy as np
-from itertools import chain,combinations
+from itertools import chain, combinations
+
+def ppom(beta, G, cf):
+    '''
+    Polynomial POM
+    Returns TTE and the POM function: lambda Z: Y
+    '''
+    n = len(G)
+    C = coeffs(G, cf)
+    TTE = sum([sum(C[i]) - C[i][0] for i in range(n)])
+    return TTE, lambda Z: inner_matt(beta, G, C, Z)
+
+def coeffs(G, cf):
+    '''
+    Creates the coefficients on a graph with a user-defined function
+    cf: lambda i, S, G: coeff
+    Returns: C (list[list[int]]): nxm, C[i] are the coeffs of the ith person
+    '''
+    n = len(G)
+    C = [[] for _ in range(n)]
+    for i in range(n):
+        neighbours = G[i]
+        for subset in _subsets(neighbours):
+            coeff = cf(i, neighbours, G)
+            C[i].append(coeff)
+    return C
+
 
 def inner_benson(Z, G, C, beta):
     '''
     Z: Txnxr RCT design tensor
     G: Graph
     C (list[np array]): coefficients, n x m
+    Returns: Y: nxTxr POM tensor
     '''
-
-    # construct A (nxmxTxr) from G:
-    T,n,r = Z.shape
-
-    # Matt's edit to make inputs consistent
-    m = max([len(Ci) for Ci in C])
-    for Ci in C:
-        Ci += [0]*(m-len(Ci))
-
-
-    m = len(C[0])
-    A = np.empty((n, m, T, r))
-    # A[i][j] = prod_{k in S_j} of z_k
-    for i in range(n):
-        # S = [0 for _ in range(m)] 
-        S = np.empty((m, T, r)) # mxTxr slice
-        neighbours = G[i]
-        subset_idx = 0
-        for size in range(beta + 1): # generate subsets
-            for subset in combinations(neighbours, size):
-                # for each Txr slice, check for z[t][k][r] = 0
-                for t in range(T):
-                    for rep in range(r):
-                        prod = 0 if any(Z[t][k][rep] for k in subset) else 1
-                        S[subset_idx][t][rep] = prod
-                subset_idx += 1
-            
-        A[i] = S
+    T, n, r = Z.shape
+    Y = np.zeros((n, T, r))
     
-    Y = np.empty((n,T,r))
     for i in range(n):
-        Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
+        subsets = _subsets(G[i], beta)
+        for t in range(T):
+            for j in range(r):
+                Y[i, t, j] = sum(C[i][subsets.index(S)] * np.prod(Z[t, [k for k in S], j]) for S in subsets)
+    
     return Y
 
 def _subsets(S, beta):
+    '''
+    Returns the subsets of S up to size beta.
+    '''
     return list(chain.from_iterable(combinations(S, k) for k in range(beta+1)))
 
 def inner_matt(Z, G, C, beta):

@@ -1,6 +1,6 @@
 from model.poms.pom import *
 from experiment.rcts.rct import staggered_Bernoulli
-
+import time
 import numpy as np
 
 def main():
@@ -15,14 +15,20 @@ def main():
     
     Z = staggered_Bernoulli(n,P,r)
 
+    begin = time.time()
     YM = inner_matt(Z,G,C,beta)
-    print("Matt:")
+    end = time.time()
+    print("Matt:", end - begin)
     print(YM)
+    begin = time.time()
     YB = inner_benson(Z,G,C,beta)
-    print("Benson:")
+    end = time.time()
+    print("Benson:", end - begin)
     print(YB)
+    begin = time.time()
     YA = inner_aedin(Z,G,C,beta)
-    print("Aedin:")
+    end = time.time()
+    print("Aedin:", end - begin)
     print(YA)
        
 if __name__ == '__main__':
