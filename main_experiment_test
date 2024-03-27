@@ -20,14 +20,13 @@ def main():
     r = 10          # number of RCT repetitions
 
     partitions, probs = balanced_partition_pin_pout(n, nc, p_in, p_out)
-    for g in range(gr):
+    for g in range(gr):        
         G = SBM(n, partitions, probs)
         TTE_true, fy = pom.ppom(beta, G, cf)
         selected = rct.select_clusters_bernoulli(nc, p/q)
 
         P = rct.sequential_treatment_probs(beta, q)
         Z = rct.clustered_staggered_Bernoulli(n, P, r, selected)
-        print(Z)
         Y = fy(Z)
 
         TTE_est = estimator.polynomial_estimate(Z, Y, P)  
