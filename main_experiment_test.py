@@ -7,7 +7,7 @@ from experiment.estimators import estimator
 def main():
     n = 1000        # population size
     beta = 1        # potential outcomes model degree
-    p = 0.06        # treatment budget (marginal treatment probability)
+    p = 1           # treatment budget (marginal treatment probability)
     q = 1           # cluster treatment budget (conditional treatment probability)
 
     nc = 50         # number of clusters
@@ -17,7 +17,7 @@ def main():
     cf = lambda i, S, G: pom.uniform_coeffs(i, S, G)    # function to generate coefficients
 
     gr = 1         # number of graph repetitions
-    r = 10          # number of RCT repetitions
+    r = 1000        # number of RCT repetitions
 
     partitions, probs = balanced_partition_pin_pout(n, nc, p_in, p_out)
     for g in range(gr):

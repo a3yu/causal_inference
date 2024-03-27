@@ -2,10 +2,11 @@ import numpy as np
 
 def polynomial_estimate(Z, Y, P):
     H = berns_coeff(P)
-    time_sums = [np.sum(Y[step]) for step in Z]
-    return (1/np.size(Z,1))*H.dot(time_sums)
     
-    
+    #time_sums = [np.sum(Y[step]) for step in Z]
+    #return (1/np.size(Z,1))*H.dot(time_sums)
+
+    return 1/np.size(Z,1) * H @ np.sum(Y,axis=1)    
 
 def berns_coeff(P):
     H = np.zeros(P.size)
