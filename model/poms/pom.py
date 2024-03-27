@@ -69,7 +69,7 @@ def inner_matt(Z, G, C, beta):
         C: List of lists of model coefficients (length = n, length of C[i] = mi)
     Returns Y: T x n x r
     '''
-    
+
     T,n,r = Z.shape
 
     # Note: This function will work best if the shapes of Z and Y are T x r x n, I'll transpose for now
