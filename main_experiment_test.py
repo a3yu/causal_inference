@@ -28,6 +28,7 @@ def main():
         P = rct.sequential_treatment_probs(beta, q)
         Z = rct.clustered_staggered_Bernoulli(n, P, r, selected)
         print(Z)
+        print(Z.shape)
         Y = fy(Z)
 
         TTE_est = estimator.polynomial_estimate(Z, Y, P)  

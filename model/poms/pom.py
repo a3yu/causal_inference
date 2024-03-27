@@ -9,7 +9,7 @@ def ppom(beta, G, cf):
     n = len(G)
     C = coeffs(beta, G, cf)
     TTE = sum([sum(C[i]) - C[i][0] for i in range(n)])
-    return TTE, lambda Z: inner_matt(beta, G, C, Z)
+    return TTE, lambda Z: inner_matt(Z, G, C, beta)
 
 def coeffs(beta, G, cf):
     '''
