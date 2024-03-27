@@ -57,7 +57,7 @@ def sequential_treatment_probs(beta, p):
     beta : degree of the potential outcomes model
     p : treatment budget / marginal treatment probability
     '''
-    P = [(i)*p/(beta) for i in range(beta)]
+    P = [(i)*p/(beta) for i in range(beta+1)]
     return np.array(P)
 
 
