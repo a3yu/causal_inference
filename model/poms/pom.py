@@ -80,19 +80,13 @@ def inner_matt(Z, G, C, beta):
         Sis = _subsets(G[i],beta)                    # vector of lists of elements in each subset 
         A = np.empty((T,r,len(Sis)))                 # indicates full treatment of each subset at each time/replication 
         for j,Si in enumerate(Sis):
-            A[:,:,j] = np.prod(Z[:,:,Si], axis=2)   
+            A[:,:,j] = np.prod(Z[:,:,Si], axis=2) 
         Y[:,i,:] = A @ C[i] 
 
     return Y
-
+            
 def inner_aedin(Z, G, C, beta):
-    '''
-    Z: Txnxr RCT design tensor
-    G: Graph: adjacency list of incoming edges for each individual
-    C (list[np array]): coefficients, n x m
-    '''
     T, n, r = Z.shape
-
     # Matt's edit to make inputs consistent
     m = max([len(Ci) for Ci in C])
     for Ci in C:
@@ -111,29 +105,35 @@ def inner_aedin(Z, G, C, beta):
             idx = np.where(slice_z == 1)[0]
             people[x] = idx[0] if idx.size != 0 else -1
         whole[y] = people
-    A = [] #rxnxmxT
-    big = []
-    for j in range(r):
-        for i in range(n):
-            person = []  # Initialize person as a list for each subset
-            for k in range(m):
-                if len(subsets[i]) <= k or len(subsets[i][k]) == 0: #NOTE what to do with emptyset?
-                    person.append(np.zeros(T))
-                elif np.min(whole[j, subsets[i][k]]) == -1:
-                    person.append(np.zeros(T))
-                else:
-                    my_array = np.zeros(T)
-                    my_array[int(np.max(whole[j, subsets[i][k]])):] = 1
-                    person.append(my_array)
-            big.append(person)  # Append person list to big
-        A.append(big)
-    # transpose to nxmxTxr
-    A = np.transpose(A, (1, 2, 3, 0))
-    print(A.shape)
-    Y = np.empty((n, T, r))
+    
+    A = np.empty((n, m, T, r))
     for i in range(n):
-        Y[i] = np.einsum('i,ijk->jk', C[i], A[i])
-    return Y
+        for j in range(m):
+            for k in range(r):
+                if len(subsets[i])>j:
+                    if len(subsets[i][j])>0:
+                        my_array = np.zeros(T)
+                        maxim = np.max(whole[k, subsets[i][j]])
+                        if(maxim != -1):
+                            my_array[int(maxim):] = 1
+                            A[i, j, :, k] = my_array
+                        else:
+                            A[i, j, :, k] = my_array
+                    else:
+                        my_array = np.ones(T)
+                        A[i, j, :, k] = my_array
+                else: 
+                    my_array = np.ones(T)
+                    A[i, j, :, k] = my_array  
+    Y = np.empty((n, T, r))
+    Y = np.einsum('nmtr,nm->ntr', A, C)
+    return Y    
+
+            
+                
+                
+            
+    
 
 
 """
