@@ -32,31 +32,33 @@ def balanced_partition_pin_pout(n : int, nc : int, p_in : float, p_out: float):
                                     larger_partitions * larger_partition_size + ((i+1) * smaller_partition_size))) for i in range(smaller_partitions)]
     return partitions, probs
 
+
 def SBM(size, partition, probabilities):
     '''
     Stochastic Block Model
     size (int): number of nodes in the graph
     partition (list[list[int]]): 2d list encoding the grouping of the nodes: must be disjoint
-    probabilities (list[list[int]]): 2d list encoding probabilities for edges b/w each partition
+    probabilities (list[list[float]]): 2d list encoding probabilities for edges b/w each partition
     Returns: adjlist (list[list[int]])
     '''
     assert _isDisjoint(partition)
-    def find_partition(partition, node):
-        for i in range(len(partition)):
-            for j in range(len(partition[i])):
-                if partition[i][j] == node:
-                    return i
-        return -1
-    
-      
+    # Precompute node to partition mapping
+    node_to_partition = {}
+    for partition_index, nodes in enumerate(partition):
+        for node in nodes:
+            node_to_partition[node] = partition_index
+
     adjList = [[] for _ in range(size)]
+    
     for i in range(size):
-        adjList[i].append(i)
-        
+        adjList[i].append(i)  # Add self-loop
         for j in range(size):
             if i != j:
-                if (random.random() < probabilities[find_partition(partition, i)][find_partition(partition, j)]):
-                    adjList[i].append(j)
+                partition_i = node_to_partition[i]
+                partition_j = node_to_partition[j]
+                if random.random() < probabilities[partition_i][partition_j]:
+                    adjList[j].append(i)  # Add directed edge from i to j
+    
     return adjList
 
 
@@ -65,7 +67,7 @@ def ER(size, partition, p):
     Erdős–Rényi model
     size (int): number of nodes in the graph
     partition (list[list[int]]): 2d list encoding the grouping of the nodes: must be disjoint
-    p (int): probability of including an edge
+    p (float): probability of including an edge
     Returns: adjlist (list[list[int]])
     '''
     assert _isDisjoint(partition)

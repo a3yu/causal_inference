@@ -1,7 +1,7 @@
 import numpy as np
 from model.graphs.graphs import SBM, balanced_partition_pin_pout
-from experiment.rcts import rct
-from model.poms import pom
+from experiment import rct
+from model import pom
 from experiment.estimators import estimator
 
 def main():

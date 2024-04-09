@@ -1,5 +1,5 @@
-from model.poms.pom import *
-from experiment.rcts.rct import staggered_Bernoulli
+from model.pom import *
+from experiment.rct import staggered_Bernoulli
 import time
 import numpy as np
 
