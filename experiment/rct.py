@@ -68,11 +68,16 @@ def staggered_Bernoulli(n, P, r):
     P (1d np array): probabilities for each rollout timestep
     r: number of trials (repetitions)
     '''
+    # T = P.size
+    # U = np.random.rand(T, n, r) # initialise random tensor
+    # P_broad = P.reshape(T, 1, 1) # broadcast P
+    # design = (U < P_broad).astype(int) # compare each rxT slice with the p's given in U
+    # design = np.maximum.accumulate(design, axis=0) # ensures individuals stay treated along T axis
+
     T = P.size
-    U = np.random.rand(T, n, r) # initialise random tensor
-    P_broad = P.reshape(T, 1, 1) # broadcast P
-    design = (U < P_broad).astype(int) # compare each rxT slice with the p's given in U
-    design = np.maximum.accumulate(design, axis=0) # ensures individuals stay treated along T axis
+    U = np.random.rand(n,r) # one uniform value used for all time steps
+    design = np.greater.outer(P,U) + 0
+
     return design
 
 
