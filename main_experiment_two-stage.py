@@ -13,9 +13,11 @@ partitions, probs = balanced_partition_pin_pout(n, nc, p_in, p_out)
 
 ### Other parameters
 beta = 1        # potential outcomes model degree
-p = 0.5         # treatment budget (marginal treatment probability)     
+p = 0.5         # treatment budget (marginal treatment probability) 
+q = p           # treatment prob within clusters (conditional treatment probability)
 gr = 10         # number of graph repetitions
-r = 5           # number of RCT repetitions
+r = 100         # number of RCT repetitions
+
 cf = lambda i, S, G: pom.uniform_coeffs(i, S, G)    # function to generate coefficients
 
 ### Experiment
@@ -23,16 +25,19 @@ bias = np.zeros(gr)
 variance = np.zeros(gr)
 for g in range(gr):
     G = SBM(n, partitions, probs)
-    TTE_true, outcomes = pom.ppom(beta, G, cf)
-
-    P = rct.sequential_treatment_probs(beta, p)
-    Z = rct.staggered_Bernoulli(n, P, r)
-    Y = outcomes(Z)
+    TTE_true, fy = pom.ppom(beta, G, cf)
     
-    TTE_est = estimator.polynomial_estimate(Z, Y, P) 
+    selected_clusters = rct.select_clusters_bernoulli(nc, p/q)
+    selected = [i for j in selected_clusters for i in partitions[j]]
+
+    Q = rct.sequential_treatment_probs(beta, q)
+    Z = rct.clustered_staggered_Bernoulli(n, Q, r, selected)
+    Y = fy(Z)
+    
+    TTE_est = estimator.clustered_polynomial_estimate(Z, Y, Q, p)
     bias[g] = np.sum(TTE_est - TTE_true)/r
     variance[g] = np.sum((TTE_est - TTE_true)**2)/r
 
 avg_bias = np.sum(bias)/gr
 avg_variance = np.sum(variance)/gr
-print("Bernoull Staggered Rollout, over {} graphs and {} RCT repetitions per graph: \nAverage Bias: {} \nVariance: {}".format(gr, r, avg_bias, avg_variance))
+print("Cluster Staggered Rollout, over {} graphs and {} RCT repetitions per graph: \nAverage Bias: {} \nVariance: {}".format(gr, r, avg_bias, avg_variance))
