@@ -5,8 +5,117 @@ import random
 from model.graphs import SBM
 from model.graph import SBM as SBMGraph
 from model.graph import ER
+from model.graph import SimpleSBM
 from collections import Counter
 import unittest
+
+import random
+import unittest
+
+class TestSimpleSBM(unittest.TestCase):
+    
+    def setUp(self):
+        random.seed(42)
+
+    def test_graph_initialization(self):
+        size = 10
+        partitionAmount = 2
+        inside = 0.8
+        outside = 0.1
+        graph = SimpleSBM(size, partitionAmount, inside, outside)
+
+        # Test basic properties
+        self.assertEqual(len(graph), size)
+        for node in range(size):
+            self.assertIn(node, graph[node], "Missing self-loop at node {}".format(node))
+
+    def test_edge_distribution(self):
+        size = 100  # Larger graph for statistical significance
+        partitionAmount = 5
+        inside = 0.5
+        outside = 0.05
+        graph = SimpleSBM(size, partitionAmount, inside, outside)
+
+        node_to_partition = {}
+        partition_size = size // partitionAmount
+        for p in range(partitionAmount):
+            for node in range(p * partition_size, min((p + 1) * partition_size, size)):
+                node_to_partition[node] = p
+
+        # Verify partition sizes
+        partition_counts = Counter(node_to_partition.values())
+        for count in partition_counts.values():
+            self.assertTrue(count == partition_size or count == partition_size + 1)
+
+        edge_counts = Counter()
+        for i in range(size):
+            for j in graph[i]:
+                if i != j:  # Exclude self-loops
+                    i_part = node_to_partition[i]
+                    j_part = node_to_partition[j]
+                    edge_counts[(i_part, j_part)] += 1
+
+        # Check if the number of edges is consistent with the probabilities
+        for (i_part, j_part), count in edge_counts.items():
+            if i_part == j_part:
+        # For intra-partition edges, the possible edge count is the combination of nodes in the partition
+                possible_edges = partition_counts[i_part] * (partition_counts[i_part] - 1) / 2
+                expected_count = inside * possible_edges
+            else:
+        # For inter-partition edges, the possible edge count is the product of the sizes of the two partitions
+                possible_edges = partition_counts[i_part] * partition_counts[j_part]
+                expected_count = outside * possible_edges
+
+    # Check if the actual number of edges is close to the expected number
+        self.assertAlmostEqual(count, expected_count, delta=0.1 * possible_edges)
+
+
+    def test_no_connection_between_partitions(self):
+        size = 30
+        partitionAmount = 3
+        inside = 1.0  # Ensure complete connectivity within partitions
+        outside = 0.0  # Ensure no connectivity between partitions
+        graph = SimpleSBM(size, partitionAmount, inside, outside)
+
+        partition_size = size // partitionAmount
+        for i in range(partitionAmount):
+            start = i * partition_size
+            end = start + partition_size
+            partition_nodes = set(range(start, end))
+
+            for node in range(start, end):
+                self.assertTrue(set(graph[node]) - {node} == partition_nodes - {node},
+                                f"Node {node} in partition {i} is not correctly connected within its partition.")
+
+    def test_randomized_edge_creation(self):
+        size = 50
+        partitionAmount = 5
+        inside = 0.3
+        outside = 0.1
+        graph = SimpleSBM(size, partitionAmount, inside, outside)
+
+        # Check that the edge probabilities fall within a reasonable range
+        inside_edges = 0
+        outside_edges = 0
+        total_inside_possible = 0
+        total_outside_possible = 0
+        partition_size = size // partitionAmount
+
+        for i in range(size):
+            i_part = i // partition_size
+            for j in graph[i]:
+                if i != j:
+                    j_part = j // partition_size
+                    if i_part == j_part:
+                        inside_edges += 1
+                    else:
+                        outside_edges += 1
+
+            total_inside_possible += partition_size - 1  # Exclude self-loop
+            total_outside_possible += size - partition_size
+
+        self.assertAlmostEqual(inside_edges / total_inside_possible, inside, delta=0.1)
+        self.assertAlmostEqual(outside_edges / total_outside_possible, outside, delta=0.1)
 
 class TestSBM(unittest.TestCase):
 
