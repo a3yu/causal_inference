@@ -25,3 +25,11 @@ def berns_coeff(P):
 # def __init__(): 
 #     berns_coeff(np.array([1,2,3,4,5,6]))
 #     berns_coeff_old(np.array([1,2,3,4,5,6]))
+
+def clustered_polynomial_estimate(Z, Y, Q, p):
+    H = berns_coeff(Q)
+
+    #time_sums = [np.sum(Y[step]) for step in Z]
+    #return (1/np.size(Z,1))*H.dot(time_sums)
+
+    return 1/np.size(Z,1) * Q[-1]/p * H @ np.sum(Y,axis=1)    
