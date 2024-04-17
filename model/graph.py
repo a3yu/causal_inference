@@ -54,39 +54,43 @@ class SBM(Graph):
         self.adjList = adjList
 class SimpleSBM(Graph):
     def __init__(self, size, partitionAmount, inside, outside) -> None:
-        self.size = size
         self.partitionAmount = partitionAmount
         self.inside = inside
         self.outside = outside
+        self.partitions = [[] for _ in range(partitionAmount)]
         super().__init__(size)
 
     def _generate_graph(self):
         # Divide nodes into roughly equal partitions and create node-to-partition mapping
         node_to_partition = {}
         partition_size = self.size // self.partitionAmount
+        
         for p in range(self.partitionAmount):
-            for node in range(p * partition_size, min((p + 1) * partition_size, self.size)):
+            start = p * partition_size
+            end = min((p + 1) * partition_size, self.size)
+            self.partitions[p] = list(range(start, end))
+            for node in self.partitions[p]:
                 node_to_partition[node] = p
 
         # Handle any remaining nodes in case of uneven division
-        for node in range(self.partitionAmount * partition_size, self.size):
-            node_to_partition[node] = self.partitionAmount - 1
+        remaining_start = self.partitionAmount * partition_size
+        if remaining_start < self.size:
+            self.partitions[-1].extend(range(remaining_start, self.size))
+            for node in range(remaining_start, self.size):
+                node_to_partition[node] = self.partitionAmount - 1
 
-        adjList = [[] for _ in range(self.size)]
+        # Initialize adjacency list and add edges based on probabilities
+        self.adjList = [[] for _ in range(self.size)]
 
         for i in range(self.size):
-            adjList[i].append(i)  # add self loop
+            self.adjList[i].append(i)  # add self loop
             for j in range(self.size):
                 if i != j:
                     partition_i = node_to_partition[i]
                     partition_j = node_to_partition[j]
                     probability = self.inside if partition_i == partition_j else self.outside
-
                     if random.random() < probability:
-                        adjList[i].append(j)  # add directed edge from i to j
-
-        self.adjList = adjList
-
+                        self.adjList[i].append(j)  # add directed edge from i to j
 class ER(SBM):
     def __init__(self, size, partition, p) -> None:
         r = len(partition)

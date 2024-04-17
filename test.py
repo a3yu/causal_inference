@@ -67,6 +67,7 @@ class TestSimpleSBM(unittest.TestCase):
                 expected_count = outside * possible_edges
 
     # Check if the actual number of edges is close to the expected number
+        print(graph.partitions)
         self.assertAlmostEqual(count, expected_count, delta=0.1 * possible_edges)
 
 
