@@ -91,8 +91,15 @@ class SimpleSBM(Graph):
                     probability = self.inside if partition_i == partition_j else self.outside
                     if random.random() < probability:
                         self.adjList[i].append(j)  # add directed edge from i to j
-class ER(SBM):
-    def __init__(self, size, partition, p) -> None:
-        r = len(partition)
-        probabilities = [[p for _ in range(r)] for _ in range(r)]
-        super().__init__(size, partition, probabilities)   
+class ErdosRenyi(Graph):
+    def __init__(self, size, p) -> None:
+        super().__init__(size)
+        self.p = p
+        self._generate_graph()
+    
+    def _generate_graph(self):
+        for i in range(self.size):
+            for j in range(i + 1, self.size):
+                self.adjList[i].append(i)
+                if random.random() < self.p:
+                    self.adjList[i].append(j)
