@@ -12,8 +12,6 @@ from model.graph import SimpleSBM
 from collections import Counter
 import unittest
 
-import random
-import unittest
 
 class TestSimpleSBM(unittest.TestCase):
     
@@ -70,6 +68,7 @@ class TestSimpleSBM(unittest.TestCase):
                 expected_count = outside * possible_edges
 
     # Check if the actual number of edges is close to the expected number
+        print(graph.partitions)
         self.assertAlmostEqual(count, expected_count, delta=0.1 * possible_edges)
 
 
