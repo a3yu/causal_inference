@@ -157,3 +157,83 @@ def hajek(n, p, y, A, z, clusters=np.array([])):
         est_C = y.dot(zz_C) / all_ones.dot(zz_C)
     return est_T - est_C
 """
+
+
+
+
+
+########################################
+# Functions to generate network weights
+########################################
+
+def simpleWeights(A, diag=5, offdiag=5, rand_diag=np.array([]), rand_offdiag=np.array([])):
+    '''
+    Returns weights generated from model described in Experiments Section
+
+    A (numpy array): n by n adjacency matrix of the network
+    diag (float): maximum norm of direct effects
+    offdiag (float): maximum norm of the indirect effects
+    rand_diag (numpy array): array of n numbers governing direct effects of each node
+    rand_offdiag (numpy arry): array of n numbers governing indirect effects of each node
+    '''
+    n = A.shape[0]
+
+    if rand_offdiag.size == 0:
+        rand_offdiag = np.random.rand(n)
+    C_offdiag = offdiag*rand_offdiag
+
+    in_deg = scipy.sparse.diags(np.array(A.sum(axis=1)).flatten(),0)  # array of the in-degree of each node
+    C = in_deg.dot(A - scipy.sparse.eye(n))
+    col_sum = np.array(C.sum(axis=0)).flatten()
+    col_sum[col_sum==0] = 1
+    temp = scipy.sparse.diags(C_offdiag/col_sum)
+    C = C.dot(temp)
+
+    if rand_diag.size == 0:
+        rand_diag = np.random.rand(n)
+    C_diag = diag*rand_diag
+    C.setdiag(C_diag)
+
+    return C
+
+########################################
+# Potential Outcomes Models
+########################################
+linear_pom = lambda C,alpha, z : C.dot(z) + alpha
+
+# Scale the effects of higher order terms
+a1 = 1      # for linear effects
+a2 = 1      # for quadratic effects
+a3 = 1      # for cubic effects
+a4 = 1      # for quartic effects
+
+# Define f(z)
+f_linear = lambda alpha, z, gz: alpha + a1*z # should be equivalent to linear_pom
+f_quadratic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz)
+f_cubic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3)
+f_quartic = lambda alpha, z, gz: alpha + a1*z + a2*np.multiply(gz,gz) + a3*np.power(gz,3) + a4*np.power(gz,4)
+
+def ppom(beta, C, alpha):
+  '''
+  Returns k-degree polynomial potential outcomes (POM) function
+  
+  beta (int): degree of POM 
+  C (np.array): weighted adjacency matrix
+  alpha (np.array): vector of null effects
+  '''
+  g = lambda z : C.dot(z) / np.array(np.sum(C,1)).flatten()
+
+  if beta == 0:
+      return lambda z: alpha + a1*z
+  elif beta == 1:
+      f = f_linear
+  elif beta == 2:
+      f = f_quadratic
+  elif beta == 3:
+      f = f_cubic
+  elif beta == 4:
+      f = f_quadratic
+  else:
+      print("ERROR: invalid degree")
+
+  return lambda z: f(alpha, C.dot(z), g(z)) 
