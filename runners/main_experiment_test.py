@@ -7,9 +7,10 @@ from model.graph import *
 from experiment import rct
 from model import pom
 from experiment.estimators import estimator
+import time
 
 ### Network parameters
-n = 500         # population size
+n = 1000         # population size
 nc = 50         # number of clusters
 p_in = 0.5      # probability of edge between units within same cluster; largest this can be is (nc/n)*avg_degree
 p_out = 0       # probability of edge between units of different clusters
@@ -22,6 +23,7 @@ r = 100       # number of RCT repetitions
 cf = lambda i, S, G: pom.uniform_coeffs(i, S, G)    # function to generate coefficients
 
 ### Experiment
+start = time.time()
 bias = np.zeros(gr)
 variance = np.zeros(gr)
 for g in range(gr):
@@ -41,4 +43,6 @@ for g in range(gr):
 
 avg_bias = np.sum(bias)/gr
 avg_variance = np.sum(variance)/gr
+end = time.time()
+print(start-end)
 print("Bernoull Staggered Rollout, over {} graphs and {} RCT repetitions per graph: \nAverage Bias: {} \nVariance: {}".format(gr, r, avg_bias, avg_variance))
