@@ -37,6 +37,21 @@ def uniform_coeffs(i, S, G):
     ciS = np.random.uniform(0,a) / (b**len(S))
     return ciS
 
+def coeffs_new(i, S, G, r):
+    '''
+    i : unit/node
+    S : subset of i's neighborhood
+    G : graph/network 
+    r : magnitude of rel to direct effects.
+    Returns coefficient for the subset S of i's neighborhood
+    '''
+    if(S == [] or S==[i]):
+        return np.random.uniform(0,1)
+    else:
+        return np.random.uniform(0,r)*np.size(G[i])/np.sum(np.size(G[S]))
+        
+    
+
 def inner_benson(Z, G, C, beta):
     '''
     Z: Txnxr RCT design tensor
