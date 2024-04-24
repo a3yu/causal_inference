@@ -6,7 +6,7 @@ def polynomial_estimate(Z, Y, P):
     #time_sums = [np.sum(Y[step]) for step in Z]
     #return (1/np.size(Z,1))*H.dot(time_sums)
 
-    return 1/np.size(Z,1) * H @ np.sum(Y,axis=1)    
+    return 1/np.size(Z,1) * H @ np.sum(Y,axis=1)
 
 def berns_coeff(P):
     H = np.zeros(P.size)
@@ -32,4 +32,25 @@ def clustered_polynomial_estimate(Z, Y, Q, p):
     #time_sums = [np.sum(Y[step]) for step in Z]
     #return (1/np.size(Z,1))*H.dot(time_sums)
 
-    return 1/np.size(Z,1) * Q[-1]/p * H @ np.sum(Y,axis=1)    
+    return 1/np.size(Z,1) * Q[-1]/p * H @ np.sum(Y,axis=1)
+
+
+def dm_estimate(Z, Y):
+    '''
+    Z: Txnxr treatment tensor
+    Y: Txnxr POM tensor
+    Returns: TTE_DM: vector of size r
+    '''
+    T, n, r = Z.shape
+    # take the nxr slices (last stage)
+    Z_last = Z[-1]
+    Y_last = Y[-1]
+    tte = np.zeros(r)
+    for i in range(r):
+        z = Z_last[:,i]
+        Yz = Y_last[:,i]
+        a = np.dot(z, Yz) / np.sum(z)
+        b = np.dot(1-z, Yz) / np.sum(1 - z)
+        tte[i] = a - b
+    return tte
+
