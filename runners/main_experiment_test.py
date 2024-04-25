@@ -36,8 +36,10 @@ for g in range(gr):
     Y = outcomes(Z)
 
     #print(np.sum(outcomes(np.ones((1,n,1))) - outcomes(np.zeros((1,n,1))))/n)
-    
-    TTE_est = estimator.polynomial_estimate(Z, Y, P) 
+    TTE_dm = estimator.dm_estimate(Z, Y)
+    bias[g] = np.sum(TTE_dm - TTE_true) / r
+    print(bias[g])
+    TTE_est = estimator.polynomial_estimate(Z, Y, P)
     bias[g] = np.sum(TTE_est - TTE_true)/r
     variance[g] = np.sum((TTE_est - TTE_true)**2)/r
 
