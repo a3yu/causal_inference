@@ -23,8 +23,11 @@ params = {
     'cf': lambda i, S, G: pom.uniform_coeffs(i, S, G)
 }
 
-# Update function
-update_param = lambda params: {**params, 'n': params['n'] + 50}
+def params_update(params):
+    n = params['n'] + 50
+    return {**params, 'n': params['n'] + 50, 'p': 10/n}
+
+update_param = params_update
 
 # Stop condition based on parameters
 stop_condition = lambda params: params['n'] > 800
@@ -37,12 +40,12 @@ poly_tracked_values, poly_bias, poly_variance = run_experiment_poly(params, upda
 
 dm_results = {
     'tracked_values': dm_tracked_values,
-    'bias': dm_bias,
+    'std_dev': dm_bias,
     'variance': dm_variance
 }
 poly_results = {
     'tracked_values': poly_tracked_values,
-    'bias': poly_bias,
+    'std_dev': poly_bias,
     'variance': poly_variance
 }
 

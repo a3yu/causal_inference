@@ -28,6 +28,7 @@ def run_experiment_poly(parameters, update_param, stop_condition, track_param):
         p_out = current_params['p_out']
         beta = current_params['beta']
         p = current_params['p']
+        print(p)
         gr = current_params['gr']
         r = current_params['r']
         cf = current_params['cf']
