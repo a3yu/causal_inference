@@ -6,7 +6,7 @@ import numpy as np
 from model.graph import *
 from experiment import rct
 from model import pom
-from experiment.estimators import estimator
+from experiment import estimator
 import time
 
 ### Network parameters

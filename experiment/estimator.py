@@ -1,14 +1,20 @@
+'''
+Estimator functions to approximate the total treatment effect for a given experiment.
+
+'''
+
 import numpy as np
 
 def polynomial_estimate(Z, Y, P):
-    H = berns_coeff(P)
+    # TODO: provide documentation
+    H = _berns_coeff(P)
     
     #time_sums = [np.sum(Y[step]) for step in Z]
     #return (1/np.size(Z,1))*H.dot(time_sums)
 
     return 1/np.size(Z,1) * H @ np.sum(Y,axis=1)
 
-def berns_coeff(P):
+def _berns_coeff(P):
     H = np.zeros(P.size)
     for t in range(P.size):
         one_minusP = 1 - P          
@@ -27,7 +33,7 @@ def berns_coeff(P):
 #     berns_coeff_old(np.array([1,2,3,4,5,6]))
 
 def clustered_polynomial_estimate(Z, Y, Q, p):
-    H = berns_coeff(Q)
+    H = _berns_coeff(Q)
 
     #time_sums = [np.sum(Y[step]) for step in Z]
     #return (1/np.size(Z,1))*H.dot(time_sums)
@@ -37,9 +43,10 @@ def clustered_polynomial_estimate(Z, Y, Q, p):
 
 def dm_estimate(Z, Y):
     '''
+    Difference in means estimator
     Z: Txnxr treatment tensor
     Y: Txnxr POM tensor
-    Returns: TTE_DM: vector of size r
+    Returns: TTE_DM (vector of size r)
     '''
     T, n, r = Z.shape
     # take the nxr slices (last stage)

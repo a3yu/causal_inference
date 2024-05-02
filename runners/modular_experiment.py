@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model.graph import SimpleSBM
 from experiment import rct
 from model import pom
-from experiment.estimators import estimator
+from experiment import estimator
 
 def run_experiment(parameters, update_param, stop_condition, track_param):
     '''

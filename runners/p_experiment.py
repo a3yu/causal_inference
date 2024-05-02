@@ -9,7 +9,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model.graph import SimpleSBM
 from experiment import rct
 from model import pom
-from experiment.estimators import estimator
+from experiment import estimator
 
 # Simulation parameters
 p_values = [0.1, 0.3, 0.5, 0.7, 1]
