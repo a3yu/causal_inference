@@ -1,3 +1,6 @@
+'''
+Implementation of basic graphs (without using classes).
+'''
 import random
 import numpy as np
 

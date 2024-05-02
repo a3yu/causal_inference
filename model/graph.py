@@ -1,12 +1,22 @@
+'''
+Implementation of graphs using class objects.
+'''
 import random
 
 class Graph:
+    '''
+    Parent graph class
+    size (int): number of nodes in the graph
+    '''
     def __init__(self, size) -> None:
         self.size = size
         self._generate_graph()
 
     
     def _generate_graph(self):
+        '''
+        Function to populate the graph object.
+        '''
         self.adjList = [0 for _ in range(self.size)]
 
     
@@ -53,6 +63,13 @@ class SBM(Graph):
         
         self.adjList = adjList
 class SimpleSBM(Graph):
+    '''
+    SBM with equal partitions that serves as a simpler prototype to the SBM class
+    size (int): number of nodes in the graph
+    partitionAmount (int): TODO
+    inside (int): 
+    outside (int): 
+    '''
     def __init__(self, size, partitionAmount, inside, outside) -> None:
         self.partitionAmount = partitionAmount
         self.inside = inside
@@ -92,6 +109,11 @@ class SimpleSBM(Graph):
                     if random.random() < probability:
                         self.adjList[i].append(j)  # add directed edge from i to j
 class ErdosRenyi(Graph):
+    '''
+    Erdos-Renyi: special case of SBM with all equal probabilities of inclusion with no partitions.
+    size (int): number of nodes in the graph
+    p (int): probability that an edge is included in the graph
+    '''
     def __init__(self, size, p) -> None:
         super().__init__(size)
         self.p = p

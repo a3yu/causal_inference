@@ -5,7 +5,7 @@ import numpy as np
 from model.graphs import SBM, balanced_partition_pin_pout
 from experiment import rct
 from model import pom
-from experiment.estimators import estimator
+from experiment import estimator
 
 ### Network parameters
 n = 1000        # population size
