@@ -11,19 +11,22 @@ from experiment import rct
 from model import pom
 from experiment.estimators import estimator
 
-def run_experiment(parameters, update_param, stop_condition):
+def run_experiment(parameters, update_param, stop_condition, track_param):
     '''
     parameters: dict containing initial experiment parameters
     update_param: lambda function that takes parameters and a control variable to update the parameters
     stop_condition: lambda function that takes the current parameters and determines the end condition
+    track_param: string specifying which parameter to track for plotting
     '''
     bias = []
     variance = []
     current_params = parameters.copy()
+    tracked_values = []  # For plotting, collect tracked parameter values
 
     while not stop_condition(current_params):
         n = current_params['n']
         print(n)
+        tracked_values.append(current_params[track_param])  # Collect values for plotting based on track_param
         nc = current_params['nc']
         p_in = current_params['p_in']
         p_out = current_params['p_out']
@@ -58,7 +61,7 @@ def run_experiment(parameters, update_param, stop_condition):
         # Update parameters for next iteration
         current_params = update_param(current_params)
 
-    return bias, variance
+    return tracked_values, bias, variance
 
 # Parameters dictionary
 params = {
@@ -74,12 +77,21 @@ params = {
 }
 
 # Update function
-update_param = lambda params: {**params, 'n': params['n'] + 50}
+update_param = lambda params: {**params, 'n': params['n'] + 50, 'p': params['n']/1000}
 
 # Stop condition based on parameters
 stop_condition = lambda params: params['n'] > 1000  # Stop when number of units exceeds 1000
 
-# Run the experiment
-bias, variance = run_experiment(params, update_param, stop_condition)
+# Run the experiment tracking 'n'
+tracked_param = 'n'  # This can be changed to any parameter you want to track
+tracked_values, bias, variance = run_experiment(params, update_param, stop_condition, tracked_param)
 
-print(bias, variance)
+# Plotting
+plt.figure(figsize=(10, 5))
+sns.lineplot(x=tracked_values, y=bias, label='Bias')
+plt.fill_between(tracked_values, np.array(bias) - np.array(variance), np.array(bias) + np.array(variance), color='blue', alpha=0.3)
+plt.title(f'Bias and Variance Evolution with Varying {tracked_param}')
+plt.xlabel(tracked_param)
+plt.ylabel('Bias')
+plt.legend()
+plt.show()
