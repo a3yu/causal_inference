@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model.graph import *
 from experiment import rct
 from model import pom
-from experiment import estimator
+from experiment.estimators import estimator
 
 ### Network parameters
 n = 1000         # population size

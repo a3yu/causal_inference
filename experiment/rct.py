@@ -1,6 +1,3 @@
-'''
-Randomised Control Trials
-'''
 import numpy as np
 
 def bernoulliRD(n, p):

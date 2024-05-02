@@ -1,9 +1,6 @@
 '''
 Testing modules for graphs using unittest
 '''
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import random
 from model.graphs import SBM
 from model.graph import SBM as SBMGraph
@@ -12,6 +9,8 @@ from model.graph import SimpleSBM
 from collections import Counter
 import unittest
 
+import random
+import unittest
 
 class TestSimpleSBM(unittest.TestCase):
     
