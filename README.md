@@ -43,3 +43,12 @@ python3 -m pip install -r requirements.txt
 ### Running an experiment
 To run a univariate experiment, simply run `python3 runners/experiment.py` and edit the run_experiment(), sample usage, and plotting fields accordingly.
 
+### Overview of Experiment
+One iteration of an experiment:
+1. first, generate a graph using a specified graph model (SBM, ER, etc).
+2. Use a specified potential outcomes model (e.g. polynomial POM) to compute the total treatment effect and a function to produce outcomes 
+on the graph based on a treatment tensor.
+3. Compute a treatment tensor based on a randomised control trial (e.g. staggered Bernoulli).
+4. Compute a TTE estimate using a specified estimator (e.g. polynomial estimate) using the above treatment and outcome tensors.
+5. Repeat this above process over varying time steps (t) and over varying number of repetitions (r), and compute the bias and variance
+of the estimate vs the true TTE. 
